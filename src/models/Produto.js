@@ -24,12 +24,12 @@ class Produto {
       throw new ValidationError('Campo "estoque" deve ser um inteiro maior ou igual a zero', 'estoque');
     }
     if (!this.idCategoria) {
-      throw new ValidationError('Campo "idCategoria" obrigatório', 'idCategoria');
+      throw new ValidationError('Campo "idCategoria" obrigatorio', 'idCategoria');
     }
     if (!this.idVendedor) {
-      throw new ValidationError('Campo "idVendedor" obrigatório', 'idVendedor');
+      throw new ValidationError('Campo "idVendedor" obrigatorio', 'idVendedor');
     }
-    
+
   }
 }
 
