@@ -11,10 +11,10 @@ class Categoria {
     validar(){
         
         if(typeof this.nome !== 'string'){
-            throw new ValidationError ('Campo "Nome" pode conter apenas letras', 'nome');
+            throw new ValidationError ('Campo "nome" pode conter apenas letras', 'nome');
         }
         if(this.nome.trim() === ''){
-            throw new ValidationError ('Campo "Nome" nao pode ser vazio', 'nome');
+            throw new ValidationError ('Campo "nome" nao pode ser vazio', 'nome');
         }
 
     }
