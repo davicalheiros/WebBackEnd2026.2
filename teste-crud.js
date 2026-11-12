@@ -9,6 +9,7 @@ const Vendedor = require('./src/models/Vendedor');
 const Produto = require('./src/models/Produto');
 const ValidationError = require('./src/errors/ValidationError');
 const NotFoundError = require('./src/errors/NotFoundError');
+const ConflictError = require('./src/errors/ConflictError');
 
 const testes = [];
 function teste(descricao, fn) {
@@ -23,6 +24,10 @@ async function contar(Entidade) {
 let idCategoria;
 let idVendedor;
 let idProduto;
+let idMouse;
+let idCategoria2;
+let idVendedor2;
+let idCabo;
 
 // ---------- Inserir e buscar ----------
 teste('Categoria: inserir válida e buscar por id', async () => {
@@ -133,6 +138,109 @@ teste('atualizar id inexistente lança NotFoundError', async () => {
   await assert.rejects(Categoria.atualizar(new ObjectId(), { nome: 'X' }), NotFoundError);
 });
 
+// ---------- Regras de relacionamento (Fase 3) ----------
+teste('Produto com categoria/vendedor inexistente ou id inválido', async () => {
+  const antes = await contar(Produto);
+  await assert.rejects(new Produto('X', 10, 1, new ObjectId(), idVendedor).inserir(), NotFoundError);
+  await assert.rejects(new Produto('X', 10, 1, idCategoria, new ObjectId()).inserir(), NotFoundError);
+  await assert.rejects(new Produto('X', 10, 1, 'abc', idVendedor).inserir(), ValidationError);
+  await assert.rejects(new Produto('X', 10, 1, idCategoria, 'abc').inserir(), ValidationError);
+  assert.equal(await contar(Produto), antes);
+});
+
+teste('Produto inserido com ids em texto é gravado como ObjectId', async () => {
+  idMouse = await new Produto('Mouse', 50, 3, String(idCategoria), String(idVendedor)).inserir();
+  const doc = await Produto.buscarPorId(idMouse);
+  assert.ok(doc.idCategoria instanceof ObjectId);
+  assert.ok(doc.idVendedor instanceof ObjectId);
+});
+
+teste('atualizar produto com categoria inexistente lança NotFoundError e não altera', async () => {
+  await assert.rejects(Produto.atualizar(idMouse, { idCategoria: new ObjectId() }), NotFoundError);
+  const doc = await Produto.buscarPorId(idMouse);
+  assert.deepEqual(doc.idCategoria, idCategoria);
+});
+
+// ---------- Unicidade ----------
+teste('Vendedor com email duplicado lança ConflictError (campo email)', async () => {
+  await assert.rejects(new Vendedor('Outra Ana', 'ANA@loja.com ').inserir(), (erro) => {
+    assert.ok(erro instanceof ConflictError);
+    assert.equal(erro.campo, 'email');
+    return true;
+  });
+});
+
+teste('Categoria com nome repetido (outra caixa) lança ConflictError com o nome digitado', async () => {
+  await assert.rejects(new Categoria('ELETRÔNICOS E TV').inserir(), (erro) => {
+    assert.ok(erro instanceof ConflictError);
+    assert.equal(erro.campo, 'nome');
+    assert.match(erro.message, /"ELETRÔNICOS E TV"/);
+    return true;
+  });
+});
+
+teste('atualizar vendedor para o email de outro lança ConflictError', async () => {
+  idVendedor2 = await new Vendedor('Bruno', 'bruno@loja.com').inserir();
+  await assert.rejects(Vendedor.atualizar(idVendedor, { email: 'bruno@loja.com' }), ConflictError);
+  assert.equal((await Vendedor.buscarPorId(idVendedor)).email, 'ana@loja.com');
+});
+
+// ---------- Buscas de produto ----------
+teste('buscas: prepara segunda categoria, vendedor e produto', async () => {
+  idCategoria2 = await new Categoria('Informática').inserir();
+  idCabo = await new Produto('Cabo C++', 20, 8, idCategoria2, idVendedor2).inserir();
+});
+
+teste('buscarPorRotulo: parcial sem diferenciar caixa e com caracteres especiais', async () => {
+  assert.deepEqual((await Produto.buscarPorRotulo('FON')).map((p) => p.rotulo), ['Fone']);
+  assert.deepEqual((await Produto.buscarPorRotulo('C++')).map((p) => p.rotulo), ['Cabo C++']);
+  assert.deepEqual(await Produto.buscarPorRotulo('xyz'), []);
+  await assert.rejects(Produto.buscarPorRotulo('   '), ValidationError);
+});
+
+teste('buscarPorFaixaDePreco: valida a faixa e devolve só os produtos dentro dela', async () => {
+  await assert.rejects(Produto.buscarPorFaixaDePreco(10, 5), ValidationError);
+  await assert.rejects(Produto.buscarPorFaixaDePreco(-1, 5), ValidationError);
+  await assert.rejects(Produto.buscarPorFaixaDePreco(NaN, 5), ValidationError);
+  const dentro = await Produto.buscarPorFaixaDePreco(40, 200);
+  assert.deepEqual(dentro.map((p) => p.rotulo), ['Fone', 'Mouse']);
+  assert.deepEqual((await Produto.buscarPorFaixaDePreco(20, 20)).map((p) => p.rotulo), ['Cabo C++']);
+});
+
+teste('buscarPorCategoria e buscarPorVendedor devolvem só os produtos certos', async () => {
+  assert.deepEqual((await Produto.buscarPorCategoria(idCategoria)).map((p) => p.rotulo), ['Fone', 'Mouse']);
+  assert.deepEqual((await Produto.buscarPorCategoria(String(idCategoria2))).map((p) => p.rotulo), ['Cabo C++']);
+  assert.deepEqual((await Produto.buscarPorVendedor(idVendedor)).map((p) => p.rotulo), ['Fone', 'Mouse']);
+  assert.deepEqual((await Produto.buscarPorVendedor(idVendedor2)).map((p) => p.rotulo), ['Cabo C++']);
+  await assert.rejects(Produto.buscarPorCategoria(new ObjectId()), NotFoundError);
+  await assert.rejects(Produto.buscarPorVendedor('abc'), ValidationError);
+});
+
+// ---------- Exclusão protegida ----------
+teste('excluir categoria/vendedor com produtos lança ConflictError e mantém o registro', async () => {
+  await assert.rejects(Categoria.excluir(idCategoria), (erro) => {
+    assert.ok(erro instanceof ConflictError);
+    assert.match(erro.message, /2 produto\(s\)/);
+    return true;
+  });
+  await assert.rejects(Vendedor.excluir(idVendedor), ConflictError);
+  await assert.rejects(Categoria.excluir(idCategoria2), ConflictError);
+  await Categoria.buscarPorId(idCategoria);
+  await Vendedor.buscarPorId(idVendedor);
+});
+
+teste('excluir categoria/vendedor inexistente continua lançando NotFoundError (não Conflict)', async () => {
+  await assert.rejects(Categoria.excluir(new ObjectId()), NotFoundError);
+  await assert.rejects(Vendedor.excluir(new ObjectId()), NotFoundError);
+});
+
+teste('depois de excluir os produtos, categoria e vendedor extras podem ser excluídos', async () => {
+  await Produto.excluir(idCabo);
+  await Produto.excluir(idMouse);
+  assert.equal(await Categoria.excluir(idCategoria2), true);
+  assert.equal(await Vendedor.excluir(idVendedor2), true);
+});
+
 // ---------- Excluir ----------
 teste('excluir existente retorna true e depois não é mais encontrado', async () => {
   assert.equal(await Produto.excluir(idProduto), true);
@@ -155,6 +263,7 @@ teste('excluir inexistente lança NotFoundError', async () => {
   try {
     db = await conectar();
     await db.dropDatabase(); // começa limpo
+    await Promise.all([Categoria.criarIndices(), Vendedor.criarIndices(), Produto.criarIndices()]);
 
     for (const [descricao, fn] of testes) {
       try {
