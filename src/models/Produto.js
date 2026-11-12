@@ -1,19 +1,18 @@
+const BaseModel = require('./BaseModel');
 const ValidationError = require('../errors/ValidationError');
 
-class Produto {
-
-    constructor(rotulo, preco, estoque, idCategoria, idVendedor, descricao = '') {
-
-        this.rotulo = rotulo;
-        this.preco = preco;
-        this.estoque = estoque;
-        this.idCategoria = idCategoria;
-        this.idVendedor = idVendedor;
-        this.descricao = descricao;
-    }
+class Produto extends BaseModel {
+  constructor(rotulo, preco, estoque, idCategoria, idVendedor, descricao = '') {
+    super('produtos');
+    this.rotulo = rotulo;
+    this.preco = preco;
+    this.estoque = estoque;
+    this.idCategoria = idCategoria;
+    this.idVendedor = idVendedor;
+    this.descricao = descricao;
+  }
 
   validar() {
-
     if (typeof this.rotulo !== 'string' || this.rotulo.trim() === '') {
       throw new ValidationError('Campo "rotulo" obrigatório', 'rotulo');
     }
@@ -24,12 +23,11 @@ class Produto {
       throw new ValidationError('Campo "estoque" deve ser um inteiro maior ou igual a zero', 'estoque');
     }
     if (!this.idCategoria) {
-      throw new ValidationError('Campo "idCategoria" obrigatorio', 'idCategoria');
+      throw new ValidationError('Campo "idCategoria" obrigatório', 'idCategoria');
     }
     if (!this.idVendedor) {
-      throw new ValidationError('Campo "idVendedor" obrigatorio', 'idVendedor');
+      throw new ValidationError('Campo "idVendedor" obrigatório', 'idVendedor');
     }
-
   }
 }
 
