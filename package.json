@@ -1,17 +1,18 @@
 {
   "name": "webbackend2026.2",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Back-end de e-commerce com Node.js e MongoDB (Projeto 1 - Programação Web Back-End, UTFPR)",
+  "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node src/index.js",
+    "test": "node teste-entidades.js && node teste-crud.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/davicalheiros/WebBackEnd2026.2.git"
   },
   "keywords": [],
-  "author": "",
+  "author": "Davi Calheiros",
   "license": "ISC",
   "type": "commonjs",
   "bugs": {
@@ -20,5 +21,8 @@
   "homepage": "https://github.com/davicalheiros/WebBackEnd2026.2#readme",
   "dependencies": {
     "mongodb": "^7.8.0"
+  },
+  "engines": {
+    "node": ">=20.19.0"
   }
 }

@@ -10,7 +10,7 @@ class BaseModel {
     return db.collection(this.nomeColecao);
   }
 
-  static paraObjectId(valor, campo = '_id') {
+  static paraObjectId(valor, campo = 'id') {
     if (valor instanceof ObjectId) {
       return valor;
     }
