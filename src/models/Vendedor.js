@@ -5,7 +5,7 @@ const formatoEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 class Vendedor {
     constructor(nome, email) {
         this.nome = nome;
-        this.email = email;
+        this.email = typeof email === 'string' ? email.trim().toLowerCase() : email;
     }
 
     validar() {

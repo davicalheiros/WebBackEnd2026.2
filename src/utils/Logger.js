@@ -10,11 +10,16 @@ class Logger {
 
     const dataHora = new Date().toLocaleString('pt-BR').replace(',', '');
 
-    const registro =
+    let registro =
       `[${dataHora}]\n` +
       `ERRO: ${erro.name}\n` +
-      `MENSAGEM: ${erro.message}\n` +
-      `OPERACAO: ${operacao}\n\n`;
+      `MENSAGEM: ${erro.message}\n`;
+
+    if (erro.campo) registro += `CAMPO: ${erro.campo}\n`;
+    if (erro.entidade) registro += `ENTIDADE: ${erro.entidade}\n`;
+    if (erro.causa) registro += `CAUSA: ${erro.causa.message}\n`;
+
+    registro += `OPERACAO: ${operacao}\n\n`;
 
     fs.appendFileSync(arquivoLog, registro);
   }
