@@ -26,11 +26,16 @@ class BaseModel {
     throw new ValidationError(`Campo "${campo}" não é um id válido`, campo);
   }
 
-  // Erro 11000 do MongoDB = violação de índice único
-  static converterErroDuplicidade(erro) {
+  // Erro 11000 do MongoDB = violação de índice único.
+  // O valor vem do documento que tentamos gravar: em índices com collation,
+  // o erro.keyValue traz uma chave interna em hexadecimal, não o texto digitado.
+  static converterErroDuplicidade(erro, documento) {
     if (erro.code === 11000) {
-      const [campo, valor] = Object.entries(erro.keyValue)[0];
-      return new ConflictError(`Já existe ${this.nomeEntidade} com ${campo} "${valor}"`, campo);
+      const [campo] = Object.keys(erro.keyValue ?? {});
+      if (!campo) {
+        return new ConflictError(`${this.nomeEntidade} duplicado(a)`, undefined);
+      }
+      return new ConflictError(`Já existe ${this.nomeEntidade} com ${campo} "${documento[campo]}"`, campo);
     }
     return erro;
   }
@@ -51,12 +56,13 @@ class BaseModel {
     await this.validarRegras();
 
     const colecao = await this.constructor.colecao();
+    const documento = this.paraDocumento();
     try {
-      const resultado = await colecao.insertOne(this.paraDocumento());
+      const resultado = await colecao.insertOne(documento);
       this._id = resultado.insertedId;
       return this._id;
     } catch (erro) {
-      throw this.constructor.converterErroDuplicidade(erro);
+      throw this.constructor.converterErroDuplicidade(erro, documento);
     }
   }
 
@@ -73,15 +79,25 @@ class BaseModel {
 
   static async listarTodos(filtro = {}) {
     const colecao = await this.colecao();
-    return colecao.find(filtro).sort({ [this.campoOrdenacao]: 1 }).toArray();
+    // collation pt: ordem alfabética real (sem separar maiúsculas e ignorando acentos)
+    return colecao
+      .find(filtro)
+      .sort({ [this.campoOrdenacao]: 1 })
+      .collation({ locale: 'pt' })
+      .toArray();
   }
 
   static async atualizar(id, dados) {
     const _id = this.paraObjectId(id);
     const atual = await this.buscarPorId(_id);
 
+    // Campos undefined significam "manter o valor atual"
+    const preenchidos = Object.fromEntries(
+      Object.entries(dados).filter(([, valor]) => valor !== undefined)
+    );
+
     // O _id é descartado para que ninguém consiga trocá-lo pelos dados
-    const { _id: _ignorado, ...mesclado } = { ...atual, ...dados };
+    const { _id: _ignorado, ...mesclado } = { ...atual, ...preenchidos };
 
     // Reaproveita as regras de validação da própria entidade
     const instancia = this.deDocumento(mesclado);
@@ -89,10 +105,11 @@ class BaseModel {
     await instancia.validarRegras();
 
     const colecao = await this.colecao();
+    const documento = instancia.paraDocumento();
     try {
-      await colecao.updateOne({ _id }, { $set: instancia.paraDocumento() });
+      await colecao.updateOne({ _id }, { $set: documento });
     } catch (erro) {
-      throw this.converterErroDuplicidade(erro);
+      throw this.converterErroDuplicidade(erro, documento);
     }
     return this.buscarPorId(_id);
   }

@@ -61,8 +61,10 @@ teste('Inserir inválido lança ValidationError e não grava nada', async () => 
 teste('listarTodos devolve a quantidade esperada, ordenada', async () => {
   await new Categoria('Casa').inserir();
   await new Categoria('Brinquedos').inserir();
+  await new Categoria('áudio').inserir();
   const lista = await Categoria.listarTodos();
-  assert.deepEqual(lista.map((c) => c.nome), ['Brinquedos', 'Casa', 'Eletrônicos']);
+  // Ordem alfabética real: minúscula e acento não vão para o fim
+  assert.deepEqual(lista.map((c) => c.nome), ['áudio', 'Brinquedos', 'Casa', 'Eletrônicos']);
   assert.equal((await Produto.listarTodos()).length, 1);
 });
 
@@ -109,6 +111,22 @@ teste('Categoria sem descrição: atualizar só o nome funciona', async () => {
   const doc = await Categoria.atualizar(id, { nome: 'Livros e Revistas' });
   assert.equal(doc.nome, 'Livros e Revistas');
   assert.equal(doc.descricao, '');
+});
+
+teste('atualizar ignora campos undefined (mantém o valor atual)', async () => {
+  const doc = await Produto.atualizar(idProduto, { rotulo: undefined, estoque: 7 });
+  assert.equal(doc.rotulo, 'Fone');
+  assert.equal(doc.estoque, 7);
+});
+
+teste('converterErroDuplicidade usa o valor digitado, não a chave interna', () => {
+  const erroMongo = { code: 11000, keyValue: { nome: '313f314f4b4543392d' } };
+  const convertido = Categoria.converterErroDuplicidade(erroMongo, { nome: 'eletrônicos' });
+  assert.equal(convertido.name, 'ConflictError');
+  assert.equal(convertido.campo, 'nome');
+  assert.match(convertido.message, /"eletrônicos"/);
+  const outro = new Error('outro');
+  assert.equal(Categoria.converterErroDuplicidade(outro, {}), outro);
 });
 
 teste('atualizar id inexistente lança NotFoundError', async () => {
