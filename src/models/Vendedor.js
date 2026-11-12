@@ -43,7 +43,6 @@ class Vendedor extends BaseModel {
     await colecao.createIndex({ email: 1 }, { unique: true });
   }
 
-  // Não usa require('./Produto') para evitar dependência circular
   static async excluir(id) {
     const _id = this.paraObjectId(id);
     await this.buscarPorId(_id);

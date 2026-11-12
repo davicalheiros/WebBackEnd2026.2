@@ -35,7 +35,6 @@ class Categoria extends BaseModel {
     await colecao.createIndex({ nome: 1 }, { unique: true, collation: { locale: 'pt', strength: 2 } });
   }
 
-  // Não usa require('./Produto') para evitar dependência circular
   static async excluir(id) {
     const _id = this.paraObjectId(id);
     await this.buscarPorId(_id);

@@ -1,4 +1,3 @@
-// Deve vir ANTES de qualquer require do projeto: usa um banco separado do real
 process.env.MONGODB_DB = 'ecommerce_teste';
 
 const assert = require('node:assert/strict');
@@ -20,7 +19,6 @@ async function contar(Entidade) {
   return (await Entidade.colecao()).countDocuments();
 }
 
-// Estado compartilhado entre os testes (rodam em sequência)
 let idCategoria;
 let idVendedor;
 let idProduto;
@@ -29,7 +27,6 @@ let idCategoria2;
 let idVendedor2;
 let idCabo;
 
-// ---------- Inserir e buscar ----------
 teste('Categoria: inserir válida e buscar por id', async () => {
   idCategoria = await new Categoria('Eletrônicos', 'Aparelhos').inserir();
   assert.ok(idCategoria instanceof ObjectId);
@@ -62,18 +59,15 @@ teste('Inserir inválido lança ValidationError e não grava nada', async () => 
   assert.deepEqual(depois, antes);
 });
 
-// ---------- Listar ----------
 teste('listarTodos devolve a quantidade esperada, ordenada', async () => {
   await new Categoria('Casa').inserir();
   await new Categoria('Brinquedos').inserir();
   await new Categoria('áudio').inserir();
   const lista = await Categoria.listarTodos();
-  // Ordem alfabética real: minúscula e acento não vão para o fim
   assert.deepEqual(lista.map((c) => c.nome), ['áudio', 'Brinquedos', 'Casa', 'Eletrônicos']);
   assert.equal((await Produto.listarTodos()).length, 1);
 });
 
-// ---------- Buscar por id: erros ----------
 teste('buscarPorId inexistente lança NotFoundError', async () => {
   await assert.rejects(Categoria.buscarPorId(new ObjectId()), NotFoundError);
   await assert.rejects(Vendedor.buscarPorId(new ObjectId()), NotFoundError);
@@ -82,11 +76,9 @@ teste('buscarPorId inexistente lança NotFoundError', async () => {
 
 teste('buscarPorId com texto inválido lança ValidationError', async () => {
   await assert.rejects(Categoria.buscarPorId('abc'), ValidationError);
-  // 12 caracteres: ObjectId.isValid aceitaria, nosso formato não
   await assert.rejects(Categoria.buscarPorId('abcdefghijkl'), ValidationError);
 });
 
-// ---------- Atualizar ----------
 teste('atualizar muda só o campo informado e mantém os demais', async () => {
   const doc = await Produto.atualizar(idProduto, { preco: 150 });
   assert.equal(doc.preco, 150);
@@ -138,7 +130,6 @@ teste('atualizar id inexistente lança NotFoundError', async () => {
   await assert.rejects(Categoria.atualizar(new ObjectId(), { nome: 'X' }), NotFoundError);
 });
 
-// ---------- Regras de relacionamento (Fase 3) ----------
 teste('Produto com categoria/vendedor inexistente ou id inválido', async () => {
   const antes = await contar(Produto);
   await assert.rejects(new Produto('X', 10, 1, new ObjectId(), idVendedor).inserir(), NotFoundError);
@@ -161,7 +152,6 @@ teste('atualizar produto com categoria inexistente lança NotFoundError e não a
   assert.deepEqual(doc.idCategoria, idCategoria);
 });
 
-// ---------- Unicidade ----------
 teste('Vendedor com email duplicado lança ConflictError (campo email)', async () => {
   await assert.rejects(new Vendedor('Outra Ana', 'ANA@loja.com ').inserir(), (erro) => {
     assert.ok(erro instanceof ConflictError);
@@ -185,7 +175,6 @@ teste('atualizar vendedor para o email de outro lança ConflictError', async () 
   assert.equal((await Vendedor.buscarPorId(idVendedor)).email, 'ana@loja.com');
 });
 
-// ---------- Buscas de produto ----------
 teste('buscas: prepara segunda categoria, vendedor e produto', async () => {
   idCategoria2 = await new Categoria('Informática').inserir();
   idCabo = await new Produto('Cabo C++', 20, 8, idCategoria2, idVendedor2).inserir();
@@ -216,7 +205,6 @@ teste('buscarPorCategoria e buscarPorVendedor devolvem só os produtos certos', 
   await assert.rejects(Produto.buscarPorVendedor('abc'), ValidationError);
 });
 
-// ---------- Exclusão protegida ----------
 teste('excluir categoria/vendedor com produtos lança ConflictError e mantém o registro', async () => {
   await assert.rejects(Categoria.excluir(idCategoria), (erro) => {
     assert.ok(erro instanceof ConflictError);
@@ -241,7 +229,6 @@ teste('depois de excluir os produtos, categoria e vendedor extras podem ser excl
   assert.equal(await Vendedor.excluir(idVendedor2), true);
 });
 
-// ---------- Excluir ----------
 teste('excluir existente retorna true e depois não é mais encontrado', async () => {
   assert.equal(await Produto.excluir(idProduto), true);
   await assert.rejects(Produto.buscarPorId(idProduto), NotFoundError);
@@ -262,7 +249,7 @@ teste('excluir inexistente lança NotFoundError', async () => {
   let db;
   try {
     db = await conectar();
-    await db.dropDatabase(); // começa limpo
+    await db.dropDatabase();
     await Promise.all([Categoria.criarIndices(), Vendedor.criarIndices(), Produto.criarIndices()]);
 
     for (const [descricao, fn] of testes) {

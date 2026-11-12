@@ -14,7 +14,6 @@ const {
 
 const colunas = ['rotulo', 'preco', 'estoque', 'idCategoria', 'idVendedor'];
 
-// Mostra categorias e vendedores para o usuário copiar os ids
 async function listarReferencias() {
   console.log('\nCategorias disponíveis:');
   exibirTabela(await Categoria.listarTodos(), ['nome']);

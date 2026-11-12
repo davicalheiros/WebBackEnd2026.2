@@ -43,7 +43,6 @@ class Produto extends BaseModel {
     }
   }
 
-  // Regras que dependem do banco: converte os ids para ObjectId e confere se existem
   async validarRegras() {
     this.idCategoria = Produto.paraObjectId(this.idCategoria, 'idCategoria');
     this.idVendedor = Produto.paraObjectId(this.idVendedor, 'idVendedor');
@@ -61,7 +60,6 @@ class Produto extends BaseModel {
     if (typeof texto !== 'string' || texto.trim() === '') {
       throw new ValidationError('Informe o texto a buscar no rótulo', 'rotulo');
     }
-    // Escapa caracteres especiais de regex, senão buscar "C++" gera erro
     const seguro = texto.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     return this.listarTodos({ rotulo: { $regex: seguro, $options: 'i' } });
   }

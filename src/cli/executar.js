@@ -3,13 +3,12 @@ const { EntradaEncerradaError } = require('./entrada');
 
 const errosConhecidos = ['ValidationError', 'NotFoundError', 'ConflictError', 'DatabaseError'];
 
-// Único ponto que captura os erros das operações: mostra a mensagem e registra no log
 async function executar(operacao, fn) {
   try {
     await fn();
   } catch (erro) {
     if (erro instanceof EntradaEncerradaError) {
-      throw erro; // não é falha da operação: o usuário encerrou a entrada
+      throw erro;
     }
     Logger.erro(erro, operacao);
     if (errosConhecidos.includes(erro.name)) {

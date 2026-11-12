@@ -32,7 +32,6 @@ async function menuPrincipal() {
   }
 }
 
-// Ctrl+C: fecha a entrada e a conexão e sai sem mostrar erro
 let encerrando = false;
 async function encerrar() {
   if (encerrando) return;
@@ -62,7 +61,6 @@ async function main() {
   try {
     await menuPrincipal();
   } catch (erro) {
-    // Entrada encerrada (Ctrl+D ou fim do pipe) não é falha
     if (!(erro instanceof EntradaEncerradaError)) {
       Logger.erro(erro, 'Menu principal');
       console.log('\n❌ Erro inesperado. Detalhes registrados em logs/erros.log');

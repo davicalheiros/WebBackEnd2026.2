@@ -1,7 +1,6 @@
 const readline = require('node:readline');
 const { ObjectId } = require('mongodb');
 
-// Lançado quando a entrada acaba (Ctrl+D ou fim de um pipe); a aplicação deve encerrar sem alarde
 class EntradaEncerradaError extends Error {
   constructor() {
     super('Entrada encerrada');
@@ -11,8 +10,6 @@ class EntradaEncerradaError extends Error {
 
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
 
-// As linhas ficam numa fila: com entrada por pipe (ou texto colado), várias linhas
-// chegam enquanto o programa ainda está ocupado e seriam perdidas pelo rl.question
 const fila = [];
 let aguardando = null;
 let encerrada = false;
@@ -54,14 +51,12 @@ async function perguntar(texto) {
   return (await lerLinha(texto)).trim();
 }
 
-// Não valida: quem valida é o model. Vazio vira NaN (e não 0) para não passar como número válido
 async function perguntarNumero(texto) {
   const resposta = await perguntar(texto);
   if (resposta === '') return NaN;
   return Number(resposta.replace(',', '.'));
 }
 
-// Vazio devolve undefined, que no atualizar significa "manter o valor atual"
 async function perguntarOpcional(texto) {
   const resposta = await perguntar(texto);
   return resposta === '' ? undefined : resposta;
@@ -94,7 +89,6 @@ function exibirTabela(documentos, colunas) {
   console.table(linhas);
 }
 
-// Monta o objeto de atualização só com as chaves preenchidas
 function soPreenchidos(dados) {
   return Object.fromEntries(Object.entries(dados).filter(([, valor]) => valor !== undefined));
 }
