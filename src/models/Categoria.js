@@ -1,7 +1,17 @@
+const BaseModel = require('./BaseModel');
 const ValidationError = require('../errors/ValidationError');
 
-class Categoria {
+class Categoria extends BaseModel {
+  static nomeColecao = 'categorias';
+  static nomeEntidade = 'Categoria';
+  static campoOrdenacao = 'nome';
+
+  static deDocumento(doc) {
+    return new Categoria(doc.nome, doc.descricao);
+  }
+
   constructor(nome, descricao = '') {
+    super();
     this.nome = typeof nome === 'string' ? nome.trim() : nome;
     this.descricao = typeof descricao === 'string' ? descricao.trim() : descricao;
   }
