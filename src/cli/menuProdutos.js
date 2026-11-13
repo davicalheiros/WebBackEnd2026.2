@@ -5,6 +5,7 @@ const executar = require('./executar');
 const {
   exibirMenu,
   escolher,
+  formatarPreco,
   pausar,
   perguntar,
   perguntarNumero,
@@ -50,7 +51,7 @@ async function menuProdutos() {
           const categoria = await escolher(Categoria, ['nome'], 'Categorias');
           const vendedor = await escolher(Vendedor, ['nome', 'email'], 'Vendedores');
           const rotulo = await perguntar('Rótulo: ');
-          const preco = await perguntarNumero('Preço: ');
+          const preco = await perguntarNumero('Preço (R$): ');
           const estoque = await perguntarNumero('Estoque: ');
           const descricao = await perguntar('Descrição (opcional): ');
           const id = await new Produto(rotulo, preco, estoque, categoria._id, vendedor._id, descricao).inserir();
@@ -73,7 +74,7 @@ async function menuProdutos() {
           const produto = await escolher(Produto, colunasEscolha, 'Produtos');
           console.log('Deixe em branco para manter o valor atual.\n');
           const rotulo = await perguntarOpcional(`Rótulo [${produto.rotulo}]: `);
-          const preco = await perguntarNumeroOpcional(`Preço [${produto.preco}]: `);
+          const preco = await perguntarNumeroOpcional(`Preço [${formatarPreco(produto.preco)}]: `);
           const estoque = await perguntarNumeroOpcional(`Estoque [${produto.estoque}]: `);
           const descricao = await perguntarOpcional(`Descrição [${produto.descricao || 'vazio'}]: `);
           console.log('');
@@ -123,8 +124,8 @@ async function menuProdutos() {
         break;
       case '9':
         await executar('Buscar produtos por faixa de preço', async () => {
-          const min = await perguntarNumero('Preço mínimo: ');
-          const max = await perguntarNumero('Preço máximo: ');
+          const min = await perguntarNumero('Preço mínimo (R$): ');
+          const max = await perguntarNumero('Preço máximo (R$): ');
           console.log('');
           exibirTabela(await comNomes(await Produto.buscarPorFaixaDePreco(min, max)), colunas);
         });

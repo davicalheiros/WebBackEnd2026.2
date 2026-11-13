@@ -63,10 +63,23 @@ async function perguntar(texto) {
   return (await lerLinha(texto)).trim();
 }
 
+function paraNumero(resposta) {
+  let texto = resposta.replace(/^R\$\s*/i, '').trim();
+  if (texto.includes(',')) {
+    texto = texto.replace(/\./g, '').replace(',', '.');
+  }
+  return Number(texto);
+}
+
+function formatarPreco(valor) {
+  if (!Number.isFinite(valor)) return valor;
+  return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }).replace(/\s/g, ' ');
+}
+
 async function perguntarNumero(texto) {
   const resposta = await perguntar(texto);
   if (resposta === '') return NaN;
-  return Number(resposta.replace(',', '.'));
+  return paraNumero(resposta);
 }
 
 async function perguntarOpcional(texto) {
@@ -77,7 +90,7 @@ async function perguntarOpcional(texto) {
 async function perguntarNumeroOpcional(texto) {
   const resposta = await perguntar(texto);
   if (resposta === '') return undefined;
-  return Number(resposta.replace(',', '.'));
+  return paraNumero(resposta);
 }
 
 async function confirmar(texto) {
@@ -109,7 +122,13 @@ function exibirNumerada(documentos, colunas) {
     const linha = {};
     for (const coluna of colunas) {
       const valor = doc[coluna];
-      linha[coluna] = valor instanceof ObjectId ? String(valor) : valor;
+      if (valor instanceof ObjectId) {
+        linha[coluna] = String(valor);
+      } else if (coluna === 'preco') {
+        linha[coluna] = formatarPreco(valor);
+      } else {
+        linha[coluna] = valor;
+      }
     }
     linhas[indice + 1] = linha;
   });
@@ -159,6 +178,7 @@ module.exports = {
   limparTela,
   pausar,
   exibirMenu,
+  formatarPreco,
   escolher,
   perguntar,
   perguntarNumero,

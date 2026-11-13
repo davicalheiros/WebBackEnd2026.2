@@ -272,14 +272,14 @@ Vendedores:
 Escolha pelo número (ou cole o id): 1
 
 Rótulo: Fone Bluetooth
-Preço: 19,90
+Preço (R$): 19,90
 Estoque: 5
 Descrição (opcional):
 
 ✅ Produto cadastrado com id 6af653bfd71d64e78e69afee
 ```
 
-As listagens de produtos mostram o nome da categoria e do vendedor, e não os ids.
+As listagens de produtos mostram o nome da categoria e do vendedor, e não os ids. Os preços aparecem em reais (`R$ 1.299,90`), e podem ser digitados como `19,90`, `19.90`, `1.299,90` ou `R$ 1.299,90`.
 
 A tela é limpa sempre que um menu é exibido. Depois de cada operação, o resultado fica na tela até você pressionar Enter.
 
