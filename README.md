@@ -95,7 +95,7 @@ npm test
 
 ## Dados de exemplo
 
-Para testar o menu com dados prontos (5 categorias, 4 vendedores e 15 produtos):
+Para testar o menu com dados prontos (10 categorias, 10 vendedores e 60 produtos):
 
 ```bash
 npm run popular
