@@ -42,7 +42,7 @@ async function menuVendedores() {
       case '3':
         await executar('Consultar vendedor', async () => {
           const vendedor = await escolher(Vendedor, colunas, 'Vendedores');
-          exibirTabela([vendedor], colunas);
+          exibirTabela([vendedor], colunas, { comId: true });
         });
         break;
       case '4':

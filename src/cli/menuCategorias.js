@@ -42,7 +42,7 @@ async function menuCategorias() {
       case '3':
         await executar('Consultar categoria', async () => {
           const categoria = await escolher(Categoria, colunas, 'Categorias');
-          exibirTabela([categoria], colunas);
+          exibirTabela([categoria], colunas, { comId: true });
         });
         break;
       case '4':

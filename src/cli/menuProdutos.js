@@ -65,7 +65,7 @@ async function menuProdutos() {
       case '3':
         await executar('Consultar produto', async () => {
           const produto = await escolher(Produto, colunasEscolha, 'Produtos');
-          exibirTabela(await comNomes([produto]), [...colunas, 'descricao']);
+          exibirTabela(await comNomes([produto]), [...colunas, 'descricao'], { comId: true });
         });
         break;
       case '4':

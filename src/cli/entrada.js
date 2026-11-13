@@ -85,12 +85,12 @@ async function confirmar(texto) {
   return resposta.toLowerCase() === 's';
 }
 
-function exibirTabela(documentos, colunas) {
+function exibirTabela(documentos, colunas, { comId = false } = {}) {
   if (documentos.length === 0) {
     console.log('Nenhum registro encontrado.');
     return;
   }
-  exibirNumerada(documentos, ['_id', ...colunas]);
+  exibirNumerada(documentos, comId ? ['_id', ...colunas] : colunas);
 }
 
 function exibirMenu(titulo, opcoes) {
