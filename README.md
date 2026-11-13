@@ -4,7 +4,7 @@ Aplicação back-end de e-commerce em **Node.js** com **MongoDB**, usando o driv
 
 ## Sobre
 
-O sistema gerencia três entidades, com CRUD completo (cadastrar, listar, buscar por id, atualizar e excluir):
+O sistema gerencia três entidades, com CRUD completo (cadastrar, listar, consultar, atualizar e excluir):
 
 - **Categoria**: agrupa os produtos.
 - **Vendedor**: quem anuncia os produtos.
@@ -90,8 +90,22 @@ npm test
 
 `npm test` executa duas verificações:
 
-1. `teste-entidades.js`: valida as entidades sem usar o banco. Cada linha mostra se o caso foi aceito (✅) ou rejeitado (❌). Os casos inválidos aparecem com ❌ de propósito: significa que a validação os barrou.
+1. `teste-entidades.js`: valida as entidades sem usar o banco. Cada caso declara se deve ser aceito ou rejeitado; ✅ indica que o resultado foi o esperado (por exemplo, um email sem domínio foi rejeitado).
 2. `teste-crud.js`: teste de integração com o MongoDB. Usa o banco separado **`ecommerce_teste`**, que é apagado no início e no fim. O banco `ecommerce` não é tocado.
+
+## Dados de exemplo
+
+Para testar o menu com dados prontos (5 categorias, 4 vendedores e 15 produtos):
+
+```bash
+npm run popular
+```
+
+Se o banco já tiver dados, o script não altera nada e apenas avisa. Para apagar os dados existentes e popular de novo:
+
+```bash
+npm run popular -- --limpar
+```
 
 ## Variáveis de ambiente (opcionais)
 
@@ -144,6 +158,7 @@ teste-entidades.js         testes de validação, sem banco
 teste-crud.js              testes de integração, banco ecommerce_teste
 teste-conexao.js           verifica a conexão com o MongoDB
 teste-logger.js            grava exemplos de erros no log
+popular-banco.js           insere dados de exemplo (npm run popular)
 ```
 
 Fluxo de uma operação: o menu (`cli`) lê os dados, a entidade (`models`) valida e aplica as regras, o `BaseModel` acessa o MongoDB e qualquer erro sobe até o `executar.js`, que mostra a mensagem ao usuário e registra no log.
@@ -214,38 +229,59 @@ OPERACAO: Excluir categoria
 ## Exemplo de uso
 
 ```
-=== E-COMMERCE ===
-1. Categorias   2. Vendedores   3. Produtos   0. Sair
+=== CATEGORIAS ===
+
+  1. Cadastrar
+  2. Listar
+  3. Consultar
+  4. Atualizar
+  5. Excluir
+
+  0. Voltar
+
 Opção: 1
 
-=== CATEGORIAS ===
-1. Cadastrar   2. Listar   3. Buscar por id   4. Atualizar   5. Excluir   0. Voltar
-Opção: 1
 Nome: Eletrônicos
 Descrição (opcional): Aparelhos
 
 ✅ Categoria cadastrada com id 6af64c9da9cb6ed973cccc2b
+
+Pressione Enter para continuar...
 ```
 
-Ao cadastrar um produto, o menu lista antes as categorias e os vendedores existentes, para você copiar os ids:
+Não é preciso digitar ids. Para consultar, atualizar ou excluir um registro, ou para ligar um produto à sua categoria e ao seu vendedor, o menu mostra uma lista numerada e você escolhe pelo número (colar o id também é aceito):
 
 ```
-Categorias disponíveis:
-┌─────────┬────────────────────────────┬───────────────┐
-│ (index) │ _id                        │ nome          │
-├─────────┼────────────────────────────┼───────────────┤
-│ 0       │ '6af64c9da9cb6ed973cccc2b' │ 'Eletrônicos' │
-└─────────┴────────────────────────────┴───────────────┘
+Opção: 1
+
+Categorias:
+┌─────────┬───────────────┐
+│ (index) │ nome          │
+├─────────┼───────────────┤
+│ 1       │ 'Brinquedos'  │
+│ 2       │ 'Eletrônicos' │
+└─────────┴───────────────┘
+Escolha pelo número (ou cole o id): 2
+
+Vendedores:
+┌─────────┬───────┬────────────────┐
+│ (index) │ nome  │ email          │
+├─────────┼───────┼────────────────┤
+│ 1       │ 'Ana' │ 'ana@loja.com' │
+└─────────┴───────┴────────────────┘
+Escolha pelo número (ou cole o id): 1
 
 Rótulo: Fone Bluetooth
 Preço: 19,90
 Estoque: 5
 Descrição (opcional):
-Id da categoria: 6af64c9da9cb6ed973cccc2b
-Id do vendedor: 6af64c9da9cb6ed973cccc2c
 
-✅ Produto cadastrado com id 6af64c9da9cb6ed973cccc2d
+✅ Produto cadastrado com id 6af653bfd71d64e78e69afee
 ```
+
+As listagens de produtos mostram o nome da categoria e do vendedor, e não os ids.
+
+A tela é limpa sempre que um menu é exibido. Depois de cada operação, o resultado fica na tela até você pressionar Enter.
 
 Para encerrar, escolha `0` nos menus ou use `Ctrl+C`.
 

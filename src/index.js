@@ -3,15 +3,19 @@ const Logger = require('./utils/Logger');
 const Categoria = require('./models/Categoria');
 const Vendedor = require('./models/Vendedor');
 const Produto = require('./models/Produto');
-const { rl, perguntar, EntradaEncerradaError } = require('./cli/entrada');
+const { rl, perguntar, exibirMenu, pausar, EntradaEncerradaError } = require('./cli/entrada');
 const menuCategorias = require('./cli/menuCategorias');
 const menuVendedores = require('./cli/menuVendedores');
 const menuProdutos = require('./cli/menuProdutos');
 
 async function menuPrincipal() {
   while (true) {
-    console.log('\n=== E-COMMERCE ===');
-    console.log('1. Categorias   2. Vendedores   3. Produtos   0. Sair');
+    exibirMenu('E-COMMERCE', [
+      ['1', 'Categorias'],
+      ['2', 'Vendedores'],
+      ['3', 'Produtos'],
+      ['0', 'Sair'],
+    ]);
     const opcao = await perguntar('Opção: ');
 
     switch (opcao) {
@@ -27,7 +31,8 @@ async function menuPrincipal() {
       case '0':
         return;
       default:
-        console.log('Opção inválida.');
+        console.log('\nOpção inválida.');
+        await pausar();
     }
   }
 }

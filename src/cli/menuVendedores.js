@@ -1,6 +1,9 @@
 const Vendedor = require('../models/Vendedor');
 const executar = require('./executar');
 const {
+  exibirMenu,
+  escolher,
+  pausar,
   perguntar,
   perguntarOpcional,
   confirmar,
@@ -12,8 +15,14 @@ const colunas = ['nome', 'email'];
 
 async function menuVendedores() {
   while (true) {
-    console.log('\n=== VENDEDORES ===');
-    console.log('1. Cadastrar   2. Listar   3. Buscar por id   4. Atualizar   5. Excluir   0. Voltar');
+    exibirMenu('VENDEDORES', [
+      ['1', 'Cadastrar'],
+      ['2', 'Listar'],
+      ['3', 'Consultar'],
+      ['4', 'Atualizar'],
+      ['5', 'Excluir'],
+      ['0', 'Voltar'],
+    ]);
     const opcao = await perguntar('Opção: ');
 
     switch (opcao) {
@@ -31,39 +40,39 @@ async function menuVendedores() {
         });
         break;
       case '3':
-        await executar('Buscar vendedor por id', async () => {
-          const id = await perguntar('Id: ');
-          exibirTabela([await Vendedor.buscarPorId(id)], colunas);
+        await executar('Consultar vendedor', async () => {
+          const vendedor = await escolher(Vendedor, colunas, 'Vendedores');
+          exibirTabela([vendedor], colunas);
         });
         break;
       case '4':
         await executar('Atualizar vendedor', async () => {
-          const id = await perguntar('Id: ');
-          exibirTabela([await Vendedor.buscarPorId(id)], colunas);
-          console.log('Deixe em branco para manter o valor atual.');
+          const vendedor = await escolher(Vendedor, colunas, 'Vendedores');
+          console.log('Deixe em branco para manter o valor atual.\n');
           const dados = soPreenchidos({
-            nome: await perguntarOpcional('Novo nome: '),
-            email: await perguntarOpcional('Novo email: '),
+            nome: await perguntarOpcional(`Nome [${vendedor.nome}]: `),
+            email: await perguntarOpcional(`Email [${vendedor.email}]: `),
           });
-          await Vendedor.atualizar(id, dados);
+          await Vendedor.atualizar(vendedor._id, dados);
           console.log('\n✅ Vendedor atualizado');
         });
         break;
       case '5':
         await executar('Excluir vendedor', async () => {
-          const id = await perguntar('Id: ');
-          if (await confirmar('Confirma a exclusão?')) {
-            await Vendedor.excluir(id);
+          const vendedor = await escolher(Vendedor, colunas, 'Vendedores');
+          if (await confirmar(`Confirma a exclusão de "${vendedor.nome}"?`)) {
+            await Vendedor.excluir(vendedor._id);
             console.log('\n✅ Vendedor excluído');
           } else {
-            console.log('Exclusão cancelada.');
+            console.log('\nExclusão cancelada.');
           }
         });
         break;
       case '0':
         return;
       default:
-        console.log('Opção inválida.');
+        console.log('\nOpção inválida.');
+        await pausar();
     }
   }
 }

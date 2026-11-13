@@ -1,5 +1,7 @@
 const readline = require('node:readline');
 const { ObjectId } = require('mongodb');
+const ValidationError = require('../errors/ValidationError');
+const NotFoundError = require('../errors/NotFoundError');
 
 class EntradaEncerradaError extends Error {
   constructor() {
@@ -47,6 +49,16 @@ function lerLinha(texto) {
   });
 }
 
+const interativo = Boolean(process.stdin.isTTY && process.stdout.isTTY);
+
+function limparTela() {
+  if (interativo) console.clear();
+}
+
+async function pausar() {
+  if (interativo) await lerLinha('\nPressione Enter para continuar...');
+}
+
 async function perguntar(texto) {
   return (await lerLinha(texto)).trim();
 }
@@ -78,15 +90,63 @@ function exibirTabela(documentos, colunas) {
     console.log('Nenhum registro encontrado.');
     return;
   }
-  const linhas = documentos.map((doc) => {
+  exibirNumerada(documentos, ['_id', ...colunas]);
+}
+
+function exibirMenu(titulo, opcoes) {
+  limparTela();
+  console.log(`\n=== ${titulo} ===\n`);
+  for (const [tecla, texto] of opcoes) {
+    if (tecla === '0') console.log('');
+    console.log(`  ${tecla}. ${texto}`);
+  }
+  console.log('');
+}
+
+function exibirNumerada(documentos, colunas) {
+  const linhas = {};
+  documentos.forEach((doc, indice) => {
     const linha = {};
-    for (const coluna of ['_id', ...colunas]) {
+    for (const coluna of colunas) {
       const valor = doc[coluna];
       linha[coluna] = valor instanceof ObjectId ? String(valor) : valor;
     }
-    return linha;
+    linhas[indice + 1] = linha;
   });
   console.table(linhas);
+}
+
+async function escolher(Entidade, colunas, titulo, { opcional = false } = {}) {
+  const documentos = await Entidade.listarTodos();
+  if (documentos.length === 0) {
+    if (opcional) return undefined;
+    throw new NotFoundError(`Nenhum(a) ${Entidade.nomeEntidade} cadastrado(a)`, Entidade.nomeEntidade);
+  }
+
+  console.log(`${titulo}:`);
+  exibirNumerada(documentos, colunas);
+
+  const dica = opcional ? 'Enter para manter' : 'ou cole o id';
+  const resposta = await perguntar(`Escolha pelo número (${dica}): `);
+
+  if (resposta === '') {
+    if (opcional) {
+      console.log('');
+      return undefined;
+    }
+    throw new ValidationError(`Escolha um item da lista de ${titulo.toLowerCase()}`, 'id');
+  }
+  if (/^\d{1,6}$/.test(resposta)) {
+    const numero = Number(resposta);
+    if (numero < 1 || numero > documentos.length) {
+      throw new ValidationError(`Número fora da lista (escolha de 1 a ${documentos.length})`, 'id');
+    }
+    console.log('');
+    return documentos[numero - 1];
+  }
+  const documento = await Entidade.buscarPorId(resposta);
+  console.log('');
+  return documento;
 }
 
 function soPreenchidos(dados) {
@@ -96,6 +156,10 @@ function soPreenchidos(dados) {
 module.exports = {
   rl,
   EntradaEncerradaError,
+  limparTela,
+  pausar,
+  exibirMenu,
+  escolher,
   perguntar,
   perguntarNumero,
   perguntarOpcional,

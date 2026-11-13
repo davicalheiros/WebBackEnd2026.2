@@ -1,5 +1,5 @@
 const Logger = require('../utils/Logger');
-const { EntradaEncerradaError } = require('./entrada');
+const { EntradaEncerradaError, pausar } = require('./entrada');
 
 const errosConhecidos = ['ValidationError', 'NotFoundError', 'ConflictError', 'DatabaseError'];
 
@@ -12,6 +12,7 @@ const errosDeComunicacao = [
 ];
 
 async function executar(operacao, fn) {
+  console.log('');
   try {
     await fn();
   } catch (erro) {
@@ -27,6 +28,7 @@ async function executar(operacao, fn) {
       console.log('\n❌ Erro inesperado. Detalhes registrados em logs/erros.log');
     }
   }
+  await pausar();
 }
 
 module.exports = executar;
