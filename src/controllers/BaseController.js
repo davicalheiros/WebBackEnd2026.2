@@ -24,7 +24,7 @@ class BaseController {
     await this.view.pausar();
   }
 
-  // A View mostra a lista; o controller interpreta a resposta (número, id colado ou vazio).
+  // A View mostra a lista; o controller interpreta a resposta (número ou vazio).
   async escolher(dao, { colunas, titulo, opcional = false }) {
     const itens = await dao.listarTodos();
     if (itens.length === 0) {
@@ -41,17 +41,12 @@ class BaseController {
       }
       throw new ValidationError(`Escolha um item da lista de ${titulo.toLowerCase()}`, 'id');
     }
-    if (/^\d{1,6}$/.test(resposta)) {
-      const numero = Number(resposta);
-      if (numero < 1 || numero > itens.length) {
-        throw new ValidationError(`Número fora da lista (escolha de 1 a ${itens.length})`, 'id');
-      }
-      this.view.pularLinha();
-      return itens[numero - 1];
+    const numero = Number(resposta);
+    if (!Number.isInteger(numero) || numero < 1 || numero > itens.length) {
+      throw new ValidationError(`Escolha um número da lista (de 1 a ${itens.length})`, 'id');
     }
-    const item = await dao.buscarPorId(resposta);
     this.view.pularLinha();
-    return item;
+    return itens[numero - 1];
   }
 }
 

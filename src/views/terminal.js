@@ -56,13 +56,9 @@ async function perguntar(texto) {
   return (await lerLinha(texto)).trim();
 }
 
-// Aceita o formato brasileiro: "R$ 1.299,90" e "19,90".
+// Aceita vírgula ou ponto como separador decimal: "19,90" ou "19.90".
 function paraNumero(resposta) {
-  let texto = resposta.replace(/^R\$\s*/i, '').trim();
-  if (texto.includes(',')) {
-    texto = texto.replace(/\./g, '').replace(',', '.');
-  }
-  return Number(texto);
+  return Number(resposta.replace(',', '.'));
 }
 
 // Vazio vira NaN, e não 0, para não ser aceito como número válido.

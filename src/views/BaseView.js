@@ -2,14 +2,6 @@ const { limparTela, pausar, perguntar } = require('./terminal');
 
 const errosConhecidos = ['ValidationError', 'NotFoundError', 'ConflictError', 'DatabaseError'];
 
-const errosDeComunicacao = [
-  'MongoServerSelectionError',
-  'MongoNetworkError',
-  'MongoNetworkTimeoutError',
-  'MongoNotConnectedError',
-  'MongoTopologyClosedError',
-];
-
 // View: tudo que aparece na tela ou é digitado passa pelas views.
 class BaseView {
   exibirMenu(titulo, opcoes) {
@@ -50,8 +42,6 @@ class BaseView {
   exibirErro(erro) {
     if (errosConhecidos.includes(erro.name)) {
       console.log(`\n⚠️  ${erro.message}`);
-    } else if (errosDeComunicacao.includes(erro.name)) {
-      console.log('\n⚠️  Falha de comunicação com o banco de dados. Verifique se o MongoDB está em execução e tente novamente.');
     } else {
       console.log('\n❌ Erro inesperado. Detalhes registrados em logs/erros.log');
     }
@@ -92,8 +82,8 @@ class BaseView {
   async escolherNaLista(itens, colunas, titulo, opcional) {
     console.log(`${titulo}:`);
     this.exibirNumerada(itens, colunas);
-    const dica = opcional ? 'Enter para manter' : 'ou cole o id';
-    return perguntar(`Escolha pelo número (${dica}): `);
+    const dica = opcional ? ' (Enter para manter)' : '';
+    return perguntar(`Escolha pelo número${dica}: `);
   }
 }
 

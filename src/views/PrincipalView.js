@@ -16,10 +16,6 @@ class PrincipalView extends BaseView {
     console.log('Verifique se o MongoDB está em execução (veja o README).');
   }
 
-  exibirEncerrando() {
-    console.log('\nEncerrando...');
-  }
-
   exibirErroInesperado() {
     console.log('\n❌ Erro inesperado. Detalhes registrados em logs/erros.log');
   }

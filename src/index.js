@@ -10,18 +10,6 @@ const EntradaEncerradaError = require('./errors/EntradaEncerradaError');
 const controller = new PrincipalController();
 const view = controller.view;
 
-// Ctrl+C fecha a entrada e a conexão antes de sair.
-let encerrando = false;
-async function encerrar() {
-  if (encerrando) return;
-  encerrando = true;
-  view.exibirEncerrando();
-  rl.close();
-  await desconectar();
-  process.exit(0);
-}
-rl.on('SIGINT', encerrar);
-process.on('SIGINT', encerrar);
 
 // Falha ao conectar encerra com aviso; fim da entrada não é erro.
 async function main() {
