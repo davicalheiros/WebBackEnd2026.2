@@ -3,6 +3,7 @@ const CategoriaView = require('../views/CategoriaView');
 const CategoriaDAO = require('../dao/CategoriaDAO');
 const Categoria = require('../models/Categoria');
 
+// Controller de categorias: recebe a opção, pede os dados à View e chama o DAO.
 class CategoriaController extends BaseController {
   constructor() {
     super(new CategoriaView());

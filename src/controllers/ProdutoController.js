@@ -5,6 +5,7 @@ const CategoriaDAO = require('../dao/CategoriaDAO');
 const VendedorDAO = require('../dao/VendedorDAO');
 const Produto = require('../models/Produto');
 
+// Controller de produtos: recebe a opção, pede os dados à View e chama o DAO.
 class ProdutoController extends BaseController {
   constructor() {
     super(new ProdutoView());

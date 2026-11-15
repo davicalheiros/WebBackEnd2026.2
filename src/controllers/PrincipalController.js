@@ -4,6 +4,7 @@ const CategoriaController = require('./CategoriaController');
 const VendedorController = require('./VendedorController');
 const ProdutoController = require('./ProdutoController');
 
+// Controller do menu principal: direciona para o controller de cada entidade.
 class PrincipalController extends BaseController {
   constructor() {
     super(new PrincipalView());

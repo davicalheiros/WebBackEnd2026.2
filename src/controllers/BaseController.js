@@ -3,6 +3,7 @@ const ValidationError = require('../errors/ValidationError');
 const NotFoundError = require('../errors/NotFoundError');
 const EntradaEncerradaError = require('../errors/EntradaEncerradaError');
 
+// Controller: coordena View e DAO; captura os erros de cada operação e registra no log.
 class BaseController {
   constructor(view) {
     this.view = view;
@@ -23,6 +24,7 @@ class BaseController {
     await this.view.pausar();
   }
 
+  // A View mostra a lista; o controller interpreta a resposta (número, id colado ou vazio).
   async escolher(dao, { colunas, titulo, opcional = false }) {
     const itens = await dao.listarTodos();
     if (itens.length === 0) {

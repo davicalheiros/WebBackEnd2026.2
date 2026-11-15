@@ -1,6 +1,7 @@
 const BaseView = require('./BaseView');
 const { perguntar, perguntarOpcional, confirmar } = require('./terminal');
 
+// View de vendedores: menu, formulários e mensagens, sem acessar o banco.
 class VendedorView extends BaseView {
   constructor() {
     super();

@@ -3,6 +3,7 @@ const VendedorView = require('../views/VendedorView');
 const VendedorDAO = require('../dao/VendedorDAO');
 const Vendedor = require('../models/Vendedor');
 
+// Controller de vendedores: recebe a opção, pede os dados à View e chama o DAO.
 class VendedorController extends BaseController {
   constructor() {
     super(new VendedorView());

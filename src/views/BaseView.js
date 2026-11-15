@@ -1,4 +1,3 @@
-const { ObjectId } = require('mongodb');
 const { limparTela, pausar, perguntar } = require('./terminal');
 
 const errosConhecidos = ['ValidationError', 'NotFoundError', 'ConflictError', 'DatabaseError'];
@@ -11,6 +10,7 @@ const errosDeComunicacao = [
   'MongoTopologyClosedError',
 ];
 
+// View: tudo que aparece na tela ou é digitado passa pelas views.
 class BaseView {
   exibirMenu(titulo, opcoes) {
     limparTela();
@@ -76,7 +76,7 @@ class BaseView {
       const linha = {};
       for (const coluna of colunas) {
         const valor = item[coluna];
-        if (valor instanceof ObjectId) {
+        if (valor !== null && typeof valor === 'object') {
           linha[coluna] = String(valor);
         } else if (coluna === 'preco') {
           linha[coluna] = this.formatarPreco(valor);

@@ -1,5 +1,6 @@
 const BaseView = require('./BaseView');
 
+// View do menu principal e das mensagens de inicialização e encerramento.
 class PrincipalView extends BaseView {
   mostrarMenu() {
     this.exibirMenu('E-COMMERCE', [

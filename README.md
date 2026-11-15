@@ -50,11 +50,14 @@ Outros comandos:
 
 ## Estrutura
 
+O projeto segue o padrão MVC: Model (`models/` e `dao/`), View (`views/`) e Controller (`controllers/`).
+
     src/
-      index.js       ponto de entrada (menu principal)
+      index.js       ponto de entrada
       config/        conexão com o MongoDB
-      models/        entidades: Categoria, Vendedor e Produto
-      dao/           acesso aos dados (operações no MongoDB)
+      models/        Model: entidades (Categoria, Vendedor e Produto)
+      dao/           Model: acesso aos dados (operações no MongoDB)
+      views/         View: menus, tabelas e leitura de dados no terminal
+      controllers/   Controller: fluxo das operações entre View e DAO
       errors/        erros personalizados
-      cli/           menus e leitura de dados no terminal
       utils/         Logger (arquivo de log)

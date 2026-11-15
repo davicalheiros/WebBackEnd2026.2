@@ -1,6 +1,7 @@
 const BaseView = require('./BaseView');
 const { perguntar, perguntarOpcional, confirmar } = require('./terminal');
 
+// View de categorias: menu, formulários e mensagens, sem acessar o banco.
 class CategoriaView extends BaseView {
   constructor() {
     super();
