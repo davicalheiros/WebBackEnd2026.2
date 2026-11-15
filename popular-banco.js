@@ -1,3 +1,4 @@
+// Insere dados de exemplo (npm run popular). Com dados existentes, só apaga com --limpar.
 const { conectar, desconectar } = require('./src/config/database');
 const Categoria = require('./src/models/Categoria');
 const Vendedor = require('./src/models/Vendedor');

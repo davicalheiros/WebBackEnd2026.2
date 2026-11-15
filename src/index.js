@@ -37,6 +37,7 @@ async function menuPrincipal() {
   }
 }
 
+// Ctrl+C fecha a entrada e a conexão antes de sair.
 let encerrando = false;
 async function encerrar() {
   if (encerrando) return;
@@ -49,6 +50,7 @@ async function encerrar() {
 rl.on('SIGINT', encerrar);
 process.on('SIGINT', encerrar);
 
+// Falha ao conectar encerra com aviso; fim da entrada não é erro.
 async function main() {
   try {
     await conectar();

@@ -1,3 +1,4 @@
+// Define o banco de testes antes de carregar o projeto, para nunca tocar no banco real.
 process.env.MONGODB_DB = 'ecommerce_teste';
 
 const assert = require('node:assert/strict');

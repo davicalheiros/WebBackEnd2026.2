@@ -17,6 +17,7 @@ class ProdutoDAO extends BaseDAO {
     await colecao.createIndex({ idVendedor: 1 });
   }
 
+  // Os ids viram ObjectId e a categoria e o vendedor precisam existir.
   async validarRegras(produto) {
     produto.idCategoria = this.paraObjectId(produto.idCategoria, 'idCategoria');
     produto.idVendedor = this.paraObjectId(produto.idVendedor, 'idVendedor');
@@ -28,6 +29,7 @@ class ProdutoDAO extends BaseDAO {
     if (typeof texto !== 'string' || texto.trim() === '') {
       throw new ValidationError('Informe o texto a buscar no rótulo', 'rotulo');
     }
+    // Escapa caracteres especiais de regex; sem isso, buscar "C++" gera erro.
     const seguro = texto.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     return this.listarTodos({ rotulo: { $regex: seguro, $options: 'i' } });
   }

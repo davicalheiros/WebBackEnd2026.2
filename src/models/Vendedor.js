@@ -2,6 +2,7 @@ const ValidationError = require('../errors/ValidationError');
 
 const formatoEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// Vendedor responsável pelos produtos anunciados. Campos privados com getters e setters.
 class Vendedor {
   #id = null;
   #nome;
@@ -30,6 +31,7 @@ class Vendedor {
     return this.#nome;
   }
 
+  // Os setters só normalizam o valor; a validação fica em validar(), que informa o campo inválido.
   set nome(valor) {
     this.#nome = typeof valor === 'string' ? valor.trim() : valor;
   }

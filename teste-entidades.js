@@ -1,3 +1,4 @@
+// Testa as validações e os getters/setters das entidades, sem usar o banco.
 const assert = require('node:assert/strict');
 const Produto = require('./src/models/Produto');
 const Categoria = require('./src/models/Categoria');

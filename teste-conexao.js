@@ -1,3 +1,4 @@
+// Verifica se a aplicação consegue conectar ao MongoDB.
 const { conectar, desconectar } = require('./src/config/database');
 
 async function testar() {

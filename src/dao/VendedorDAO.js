@@ -8,11 +8,13 @@ class VendedorDAO extends BaseDAO {
     super('vendedores', Vendedor, 'nome');
   }
 
+  // Email único.
   async criarIndices() {
     const colecao = await this.colecao();
     await colecao.createIndex({ email: 1 }, { unique: true });
   }
 
+  // O MongoDB não faz exclusão em cascata. Consulta a coleção direto para evitar require circular com o ProdutoDAO.
   async excluir(id) {
     const _id = this.paraObjectId(id);
     await this.buscarPorId(_id);

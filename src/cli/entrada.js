@@ -3,6 +3,7 @@ const { ObjectId } = require('mongodb');
 const ValidationError = require('../errors/ValidationError');
 const NotFoundError = require('../errors/NotFoundError');
 
+// Indica que a entrada acabou (Ctrl+D ou fim de um pipe); o programa encerra sem tratar como falha.
 class EntradaEncerradaError extends Error {
   constructor() {
     super('Entrada encerrada');
@@ -12,6 +13,7 @@ class EntradaEncerradaError extends Error {
 
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
 
+// As linhas ficam numa fila porque o rl.question perde linhas quando vêm de um pipe ou de texto colado.
 const fila = [];
 let aguardando = null;
 let encerrada = false;
@@ -49,6 +51,7 @@ function lerLinha(texto) {
   });
 }
 
+// Limpar a tela e pausar só fazem sentido em terminal de verdade (não com pipe).
 const interativo = Boolean(process.stdin.isTTY && process.stdout.isTTY);
 
 function limparTela() {
@@ -63,6 +66,7 @@ async function perguntar(texto) {
   return (await lerLinha(texto)).trim();
 }
 
+// Aceita o formato brasileiro: "R$ 1.299,90" e "19,90".
 function paraNumero(resposta) {
   let texto = resposta.replace(/^R\$\s*/i, '').trim();
   if (texto.includes(',')) {
@@ -76,6 +80,7 @@ function formatarPreco(valor) {
   return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }).replace(/\s/g, ' ');
 }
 
+// Vazio vira NaN, e não 0, para não ser aceito como número válido.
 async function perguntarNumero(texto) {
   const resposta = await perguntar(texto);
   if (resposta === '') return NaN;

@@ -1,3 +1,4 @@
+// Registro inexistente; guarda o nome da entidade.
 class NotFoundError extends Error {
   constructor(mensagem, entidade) {
     super(mensagem);

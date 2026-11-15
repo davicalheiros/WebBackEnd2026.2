@@ -4,6 +4,7 @@ const path = require('path');
 const pastaLogs = path.join(__dirname, '..', '..', 'logs');
 const arquivoLog = path.join(pastaLogs, 'erros.log');
 
+// Única peça que escreve em logs/erros.log.
 class Logger {
   static erro(erro, operacao) {
     fs.mkdirSync(pastaLogs, { recursive: true });

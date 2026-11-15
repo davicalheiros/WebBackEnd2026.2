@@ -1,3 +1,4 @@
+// Grava um exemplo de cada tipo de erro em logs/erros.log.
 const Logger = require('./src/utils/Logger');
 const ValidationError = require('./src/errors/ValidationError');
 const NotFoundError = require('./src/errors/NotFoundError');

@@ -1,3 +1,4 @@
+// Dado inválido ou ausente; guarda o campo com problema.
 class ValidationError extends Error{
     
     constructor (mensagem,campo) {

@@ -4,6 +4,7 @@ const ValidationError = require('../errors/ValidationError');
 const NotFoundError = require('../errors/NotFoundError');
 const ConflictError = require('../errors/ConflictError');
 
+// CRUD genérico no MongoDB, herdado pelos DAOs de cada entidade.
 class BaseDAO {
   constructor(nomeColecao, Entidade, campoOrdenacao) {
     this.nomeColecao = nomeColecao;
@@ -17,6 +18,7 @@ class BaseDAO {
     return db.collection(this.nomeColecao);
   }
 
+  // A regex é necessária porque ObjectId.isValid aceita qualquer texto de 12 caracteres.
   paraObjectId(valor, campo = 'id') {
     if (valor instanceof ObjectId) {
       return valor;
@@ -27,6 +29,8 @@ class BaseDAO {
     throw new ValidationError(`Campo "${campo}" não é um id válido`, campo);
   }
 
+  // Código 11000 = violação de índice único. O valor vem do documento porque,
+  // com collation, o keyValue do erro traz uma chave interna em hexadecimal.
   converterErroDuplicidade(erro, documento) {
     if (erro.code === 11000) {
       const [campo] = Object.keys(erro.keyValue ?? {});
@@ -68,6 +72,7 @@ class BaseDAO {
     return this.Entidade.deDocumento(documento);
   }
 
+  // A collation 'pt' dá ordem alfabética real, ignorando maiúsculas e acentos.
   async listarTodos(filtro = {}) {
     const colecao = await this.colecao();
     const documentos = await colecao
@@ -78,6 +83,7 @@ class BaseDAO {
     return documentos.map((documento) => this.Entidade.deDocumento(documento));
   }
 
+  // Aplica só os campos da entidade, pelos setters, e revalida antes de gravar.
   async atualizar(id, dados) {
     const _id = this.paraObjectId(id);
     const entidade = await this.buscarPorId(_id);

@@ -11,6 +11,7 @@ const errosDeComunicacao = [
   'MongoTopologyClosedError',
 ];
 
+// Único ponto que captura os erros das operações: mostra a mensagem e registra no log.
 async function executar(operacao, fn) {
   console.log('');
   try {

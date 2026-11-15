@@ -1,5 +1,6 @@
 const ValidationError = require('../errors/ValidationError');
 
+// Produto à venda. Guarda os ids da categoria e do vendedor (relacionamento por referência).
 class Produto {
   #id = null;
   #rotulo;
@@ -43,6 +44,7 @@ class Produto {
     return this.#rotulo;
   }
 
+  // Os setters só normalizam o valor; a validação fica em validar(), que informa o campo inválido.
   set rotulo(valor) {
     this.#rotulo = typeof valor === 'string' ? valor.trim() : valor;
   }

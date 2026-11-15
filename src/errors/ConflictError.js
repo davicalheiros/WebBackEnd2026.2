@@ -1,3 +1,4 @@
+// Duplicidade (índice único) ou exclusão bloqueada por produtos vinculados.
 class ConflictError extends Error {
   constructor(mensagem, campo) {
     super(mensagem);

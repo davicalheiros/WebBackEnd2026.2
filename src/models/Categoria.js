@@ -1,5 +1,6 @@
 const ValidationError = require('../errors/ValidationError');
 
+// Categoria de produtos. Os campos são privados e acessados por getters e setters.
 class Categoria {
   #id = null;
   #nome;
@@ -28,6 +29,7 @@ class Categoria {
     return this.#nome;
   }
 
+  // Os setters só normalizam o valor; a validação fica em validar(), que informa o campo inválido.
   set nome(valor) {
     this.#nome = typeof valor === 'string' ? valor.trim() : valor;
   }
