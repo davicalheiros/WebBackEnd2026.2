@@ -1,21 +1,43 @@
-const BaseModel = require('./BaseModel');
-const { conectar } = require('../config/database');
-const ConflictError = require('../errors/ConflictError');
 const ValidationError = require('../errors/ValidationError');
 
-class Categoria extends BaseModel {
-  static nomeColecao = 'categorias';
-  static nomeEntidade = 'Categoria';
-  static campoOrdenacao = 'nome';
-
-  static deDocumento(doc) {
-    return new Categoria(doc.nome, doc.descricao);
-  }
+class Categoria {
+  #id = null;
+  #nome;
+  #descricao;
 
   constructor(nome, descricao = '') {
-    super();
-    this.nome = typeof nome === 'string' ? nome.trim() : nome;
-    this.descricao = typeof descricao === 'string' ? descricao.trim() : descricao;
+    this.nome = nome;
+    this.descricao = descricao;
+  }
+
+  static deDocumento(documento) {
+    const categoria = new Categoria(documento.nome, documento.descricao);
+    categoria.id = documento._id;
+    return categoria;
+  }
+
+  get id() {
+    return this.#id;
+  }
+
+  set id(valor) {
+    this.#id = valor;
+  }
+
+  get nome() {
+    return this.#nome;
+  }
+
+  set nome(valor) {
+    this.#nome = typeof valor === 'string' ? valor.trim() : valor;
+  }
+
+  get descricao() {
+    return this.#descricao;
+  }
+
+  set descricao(valor) {
+    this.#descricao = typeof valor === 'string' ? valor.trim() : valor;
   }
 
   validar() {
@@ -30,23 +52,8 @@ class Categoria extends BaseModel {
     }
   }
 
-  static async criarIndices() {
-    const colecao = await this.colecao();
-    await colecao.createIndex({ nome: 1 }, { unique: true, collation: { locale: 'pt', strength: 2 } });
-  }
-
-  static async excluir(id) {
-    const _id = this.paraObjectId(id);
-    await this.buscarPorId(_id);
-    const db = await conectar();
-    const vinculados = await db.collection('produtos').countDocuments({ idCategoria: _id });
-    if (vinculados > 0) {
-      throw new ConflictError(
-        `Categoria possui ${vinculados} produto(s) vinculado(s) e não pode ser excluída`,
-        'idCategoria'
-      );
-    }
-    return super.excluir(_id);
+  paraDocumento() {
+    return { nome: this.#nome, descricao: this.#descricao };
   }
 }
 

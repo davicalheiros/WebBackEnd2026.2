@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const Produto = require('./src/models/Produto');
 const Categoria = require('./src/models/Categoria');
 const Vendedor = require('./src/models/Vendedor');
@@ -22,6 +23,28 @@ const testes = [
   ['Vendedor email sem dominio', INVALIDO, () => new Vendedor('Ana', 'ana@loja').validar()],
   ['Vendedor email vazio',       INVALIDO, () => new Vendedor('Ana', '').validar()],
   ['Vendedor sem nome',          INVALIDO, () => new Vendedor('', 'ana@loja.com').validar()],
+  ['Setter de nome remove espacos', VALIDO, () => {
+    const categoria = new Categoria('X');
+    categoria.nome = '  Casa  ';
+    assert.equal(categoria.nome, 'Casa');
+    categoria.validar();
+  }],
+  ['Setter de email remove espacos e usa minusculas', VALIDO, () => {
+    const vendedor = new Vendedor('Ana', 'a@b.com');
+    vendedor.email = '  ANA@Loja.COM ';
+    assert.equal(vendedor.email, 'ana@loja.com');
+    vendedor.validar();
+  }],
+  ['Campos privados e paraDocumento', VALIDO, () => {
+    const categoria = new Categoria('X');
+    assert.deepEqual(Object.keys(categoria), []);
+    assert.deepEqual(categoria.paraDocumento(), { nome: 'X', descricao: '' });
+  }],
+  ['Preco alterado pelo setter para -1', INVALIDO, () => {
+    const produto = new Produto('Fone', 10, 5, 'idCat', 'idVend');
+    produto.preco = -1;
+    produto.validar();
+  }],
 ];
 
 let falhas = 0;

@@ -4,13 +4,20 @@ const ValidationError = require('../errors/ValidationError');
 const NotFoundError = require('../errors/NotFoundError');
 const ConflictError = require('../errors/ConflictError');
 
-class BaseModel {
-  static async colecao() {
+class BaseDAO {
+  constructor(nomeColecao, Entidade, campoOrdenacao) {
+    this.nomeColecao = nomeColecao;
+    this.Entidade = Entidade;
+    this.nomeEntidade = Entidade.name;
+    this.campoOrdenacao = campoOrdenacao;
+  }
+
+  async colecao() {
     const db = await conectar();
     return db.collection(this.nomeColecao);
   }
 
-  static paraObjectId(valor, campo = 'id') {
+  paraObjectId(valor, campo = 'id') {
     if (valor instanceof ObjectId) {
       return valor;
     }
@@ -20,7 +27,7 @@ class BaseModel {
     throw new ValidationError(`Campo "${campo}" não é um id válido`, campo);
   }
 
-  static converterErroDuplicidade(erro, documento) {
+  converterErroDuplicidade(erro, documento) {
     if (erro.code === 11000) {
       const [campo] = Object.keys(erro.keyValue ?? {});
       if (!campo) {
@@ -31,31 +38,26 @@ class BaseModel {
     return erro;
   }
 
-  static async criarIndices() {}
+  async criarIndices() {}
 
-  async validarRegras() {}
+  async validarRegras(entidade) {}
 
-  paraDocumento() {
-    const { _id, ...documento } = this;
-    return documento;
-  }
+  async inserir(entidade) {
+    entidade.validar();
+    await this.validarRegras(entidade);
 
-  async inserir() {
-    this.validar();
-    await this.validarRegras();
-
-    const colecao = await this.constructor.colecao();
-    const documento = this.paraDocumento();
+    const colecao = await this.colecao();
+    const documento = entidade.paraDocumento();
     try {
       const resultado = await colecao.insertOne(documento);
-      this._id = resultado.insertedId;
-      return this._id;
+      entidade.id = resultado.insertedId;
+      return entidade.id;
     } catch (erro) {
-      throw this.constructor.converterErroDuplicidade(erro, documento);
+      throw this.converterErroDuplicidade(erro, documento);
     }
   }
 
-  static async buscarPorId(id) {
+  async buscarPorId(id) {
     const _id = this.paraObjectId(id);
     const colecao = await this.colecao();
     const documento = await colecao.findOne({ _id });
@@ -63,34 +65,35 @@ class BaseModel {
     if (!documento) {
       throw new NotFoundError(`${this.nomeEntidade} com id ${_id} não encontrado(a)`, this.nomeEntidade);
     }
-    return documento;
+    return this.Entidade.deDocumento(documento);
   }
 
-  static async listarTodos(filtro = {}) {
+  async listarTodos(filtro = {}) {
     const colecao = await this.colecao();
-    return colecao
+    const documentos = await colecao
       .find(filtro)
       .sort({ [this.campoOrdenacao]: 1 })
       .collation({ locale: 'pt' })
       .toArray();
+    return documentos.map((documento) => this.Entidade.deDocumento(documento));
   }
 
-  static async atualizar(id, dados) {
+  async atualizar(id, dados) {
     const _id = this.paraObjectId(id);
-    const atual = await this.buscarPorId(_id);
+    const entidade = await this.buscarPorId(_id);
 
-    const preenchidos = Object.fromEntries(
-      Object.entries(dados).filter(([, valor]) => valor !== undefined)
-    );
+    const camposPermitidos = Object.keys(entidade.paraDocumento());
+    for (const [campo, valor] of Object.entries(dados)) {
+      if (valor !== undefined && camposPermitidos.includes(campo)) {
+        entidade[campo] = valor;
+      }
+    }
 
-    const { _id: _ignorado, ...mesclado } = { ...atual, ...preenchidos };
-
-    const instancia = this.deDocumento(mesclado);
-    instancia.validar();
-    await instancia.validarRegras();
+    entidade.validar();
+    await this.validarRegras(entidade);
 
     const colecao = await this.colecao();
-    const documento = instancia.paraDocumento();
+    const documento = entidade.paraDocumento();
     try {
       await colecao.updateOne({ _id }, { $set: documento });
     } catch (erro) {
@@ -99,7 +102,7 @@ class BaseModel {
     return this.buscarPorId(_id);
   }
 
-  static async excluir(id) {
+  async excluir(id) {
     const _id = this.paraObjectId(id);
     const colecao = await this.colecao();
     const resultado = await colecao.deleteOne({ _id });
@@ -111,4 +114,4 @@ class BaseModel {
   }
 }
 
-module.exports = BaseModel;
+module.exports = BaseDAO;

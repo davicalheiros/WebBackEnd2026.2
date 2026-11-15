@@ -1,23 +1,45 @@
-const BaseModel = require('./BaseModel');
-const { conectar } = require('../config/database');
-const ConflictError = require('../errors/ConflictError');
 const ValidationError = require('../errors/ValidationError');
 
 const formatoEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-class Vendedor extends BaseModel {
-  static nomeColecao = 'vendedores';
-  static nomeEntidade = 'Vendedor';
-  static campoOrdenacao = 'nome';
-
-  static deDocumento(doc) {
-    return new Vendedor(doc.nome, doc.email);
-  }
+class Vendedor {
+  #id = null;
+  #nome;
+  #email;
 
   constructor(nome, email) {
-    super();
-    this.nome = typeof nome === 'string' ? nome.trim() : nome;
-    this.email = typeof email === 'string' ? email.trim().toLowerCase() : email;
+    this.nome = nome;
+    this.email = email;
+  }
+
+  static deDocumento(documento) {
+    const vendedor = new Vendedor(documento.nome, documento.email);
+    vendedor.id = documento._id;
+    return vendedor;
+  }
+
+  get id() {
+    return this.#id;
+  }
+
+  set id(valor) {
+    this.#id = valor;
+  }
+
+  get nome() {
+    return this.#nome;
+  }
+
+  set nome(valor) {
+    this.#nome = typeof valor === 'string' ? valor.trim() : valor;
+  }
+
+  get email() {
+    return this.#email;
+  }
+
+  set email(valor) {
+    this.#email = typeof valor === 'string' ? valor.trim().toLowerCase() : valor;
   }
 
   validar() {
@@ -38,23 +60,8 @@ class Vendedor extends BaseModel {
     }
   }
 
-  static async criarIndices() {
-    const colecao = await this.colecao();
-    await colecao.createIndex({ email: 1 }, { unique: true });
-  }
-
-  static async excluir(id) {
-    const _id = this.paraObjectId(id);
-    await this.buscarPorId(_id);
-    const db = await conectar();
-    const vinculados = await db.collection('produtos').countDocuments({ idVendedor: _id });
-    if (vinculados > 0) {
-      throw new ConflictError(
-        `Vendedor possui ${vinculados} produto(s) vinculado(s) e não pode ser excluído`,
-        'idVendedor'
-      );
-    }
-    return super.excluir(_id);
+  paraDocumento() {
+    return { nome: this.#nome, email: this.#email };
   }
 }
 
