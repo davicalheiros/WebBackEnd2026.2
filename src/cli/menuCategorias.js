@@ -1,4 +1,5 @@
 const Categoria = require('../models/Categoria');
+const CategoriaDAO = require('../dao/CategoriaDAO');
 const executar = require('./executar');
 const {
   exibirMenu,
@@ -10,6 +11,8 @@ const {
   exibirTabela,
   soPreenchidos,
 } = require('./entrada');
+
+const categoriaDAO = new CategoriaDAO();
 
 const colunas = ['nome', 'descricao'];
 
@@ -30,38 +33,38 @@ async function menuCategorias() {
         await executar('Inserir categoria', async () => {
           const nome = await perguntar('Nome: ');
           const descricao = await perguntar('Descrição (opcional): ');
-          const id = await new Categoria(nome, descricao).inserir();
+          const id = await categoriaDAO.inserir(new Categoria(nome, descricao));
           console.log(`\n✅ Categoria cadastrada com id ${id}`);
         });
         break;
       case '2':
         await executar('Listar categorias', async () => {
-          exibirTabela(await Categoria.listarTodos(), colunas);
+          exibirTabela(await categoriaDAO.listarTodos(), colunas);
         });
         break;
       case '3':
         await executar('Consultar categoria', async () => {
-          const categoria = await escolher(Categoria, colunas, 'Categorias');
+          const categoria = await escolher(categoriaDAO, colunas, 'Categorias');
           exibirTabela([categoria], colunas, { comId: true });
         });
         break;
       case '4':
         await executar('Atualizar categoria', async () => {
-          const categoria = await escolher(Categoria, colunas, 'Categorias');
+          const categoria = await escolher(categoriaDAO, colunas, 'Categorias');
           console.log('Deixe em branco para manter o valor atual.\n');
           const dados = soPreenchidos({
             nome: await perguntarOpcional(`Nome [${categoria.nome}]: `),
             descricao: await perguntarOpcional(`Descrição [${categoria.descricao || 'vazio'}]: `),
           });
-          await Categoria.atualizar(categoria._id, dados);
+          await categoriaDAO.atualizar(categoria.id, dados);
           console.log('\n✅ Categoria atualizada');
         });
         break;
       case '5':
         await executar('Excluir categoria', async () => {
-          const categoria = await escolher(Categoria, colunas, 'Categorias');
+          const categoria = await escolher(categoriaDAO, colunas, 'Categorias');
           if (await confirmar(`Confirma a exclusão de "${categoria.nome}"?`)) {
-            await Categoria.excluir(categoria._id);
+            await categoriaDAO.excluir(categoria.id);
             console.log('\n✅ Categoria excluída');
           } else {
             console.log('\nExclusão cancelada.');

@@ -1,8 +1,8 @@
 const { conectar, desconectar } = require('./config/database');
 const Logger = require('./utils/Logger');
-const Categoria = require('./models/Categoria');
-const Vendedor = require('./models/Vendedor');
-const Produto = require('./models/Produto');
+const CategoriaDAO = require('./dao/CategoriaDAO');
+const VendedorDAO = require('./dao/VendedorDAO');
+const ProdutoDAO = require('./dao/ProdutoDAO');
 const { rl, perguntar, exibirMenu, pausar, EntradaEncerradaError } = require('./cli/entrada');
 const menuCategorias = require('./cli/menuCategorias');
 const menuVendedores = require('./cli/menuVendedores');
@@ -52,7 +52,11 @@ process.on('SIGINT', encerrar);
 async function main() {
   try {
     await conectar();
-    await Promise.all([Categoria.criarIndices(), Vendedor.criarIndices(), Produto.criarIndices()]);
+    await Promise.all([
+      new CategoriaDAO().criarIndices(),
+      new VendedorDAO().criarIndices(),
+      new ProdutoDAO().criarIndices(),
+    ]);
   } catch (erro) {
     Logger.erro(erro, 'Inicializar aplicação');
     console.log(`Não foi possível iniciar: ${erro.message}`);

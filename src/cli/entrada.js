@@ -103,7 +103,7 @@ function exibirTabela(documentos, colunas, { comId = false } = {}) {
     console.log('Nenhum registro encontrado.');
     return;
   }
-  exibirNumerada(documentos, comId ? ['_id', ...colunas] : colunas);
+  exibirNumerada(documentos, comId ? ['id', ...colunas] : colunas);
 }
 
 function exibirMenu(titulo, opcoes) {
@@ -135,11 +135,11 @@ function exibirNumerada(documentos, colunas) {
   console.table(linhas);
 }
 
-async function escolher(Entidade, colunas, titulo, { opcional = false } = {}) {
-  const documentos = await Entidade.listarTodos();
+async function escolher(dao, colunas, titulo, { opcional = false } = {}) {
+  const documentos = await dao.listarTodos();
   if (documentos.length === 0) {
     if (opcional) return undefined;
-    throw new NotFoundError(`Nenhum(a) ${Entidade.nomeEntidade} cadastrado(a)`, Entidade.nomeEntidade);
+    throw new NotFoundError(`Nenhum(a) ${dao.nomeEntidade} cadastrado(a)`, dao.nomeEntidade);
   }
 
   console.log(`${titulo}:`);
@@ -163,7 +163,7 @@ async function escolher(Entidade, colunas, titulo, { opcional = false } = {}) {
     console.log('');
     return documentos[numero - 1];
   }
-  const documento = await Entidade.buscarPorId(resposta);
+  const documento = await dao.buscarPorId(resposta);
   console.log('');
   return documento;
 }

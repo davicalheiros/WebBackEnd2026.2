@@ -2,6 +2,13 @@ const { conectar, desconectar } = require('./src/config/database');
 const Categoria = require('./src/models/Categoria');
 const Vendedor = require('./src/models/Vendedor');
 const Produto = require('./src/models/Produto');
+const CategoriaDAO = require('./src/dao/CategoriaDAO');
+const VendedorDAO = require('./src/dao/VendedorDAO');
+const ProdutoDAO = require('./src/dao/ProdutoDAO');
+
+const categoriaDAO = new CategoriaDAO();
+const vendedorDAO = new VendedorDAO();
+const produtoDAO = new ProdutoDAO();
 
 const categorias = [
   ['Eletrônicos', 'Celulares, fones e acessórios'],
@@ -122,20 +129,20 @@ async function popular() {
     console.log(`Dados anteriores do banco "${db.databaseName}" apagados.`);
   }
 
-  await Promise.all([Categoria.criarIndices(), Vendedor.criarIndices(), Produto.criarIndices()]);
+  await Promise.all([categoriaDAO.criarIndices(), vendedorDAO.criarIndices(), produtoDAO.criarIndices()]);
 
   const idsCategorias = {};
   for (const [nome, descricao] of categorias) {
-    idsCategorias[nome] = await new Categoria(nome, descricao).inserir();
+    idsCategorias[nome] = await categoriaDAO.inserir(new Categoria(nome, descricao));
   }
 
   const idsVendedores = {};
   for (const [nome, email] of vendedores) {
-    idsVendedores[nome] = await new Vendedor(nome, email).inserir();
+    idsVendedores[nome] = await vendedorDAO.inserir(new Vendedor(nome, email));
   }
 
   for (const [rotulo, preco, estoque, categoria, vendedor, descricao] of produtos) {
-    await new Produto(rotulo, preco, estoque, idsCategorias[categoria], idsVendedores[vendedor], descricao).inserir();
+    await produtoDAO.inserir(new Produto(rotulo, preco, estoque, idsCategorias[categoria], idsVendedores[vendedor], descricao));
   }
 
   console.log(`Banco "${db.databaseName}" populado com sucesso:`);
